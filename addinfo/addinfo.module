@@ -1,0 +1,184 @@
+<?php
+ 
+/**
+ * @file
+ * Play with teh Form API
+ */
+ 
+/**
+ * Implements hook_menu().
+ */
+ 
+ function addinfo_menu(){
+ $items['addinfo'] = array(
+ 'title' => t('Register Contact Information'),
+ 'page callback' => 'drupal_get_form',
+ 'page arguments' => array('addinfo_nameform'),
+// 'access callback' => TRUE,
+ 'access arguments' => array('administer addinfo settings'),
+ 'type' => MENU_NORMAL_ITEM
+ 
+ );
+ return $items;
+ }
+/*
+	permission
+*/
+function addinfo_permission(){
+ return array(
+ 'administer addinfo settings' => array(
+  'title' => t('Administrar configuración addinfo'),
+  'restrict access' => true,
+  )
+ );
+}
+
+
+/**
+file data base info
+**/
+require_once("xdb.php");
+
+
+
+/**
+ * Define a form.
+ */
+function addinfo_nameform(){
+ $form['xdata'] = array(
+ '#title' => t('Contact Information'),
+ '#type' => 'fieldset',
+ '#description' => t('Enter the requested information:'), 
+ );
+
+$form['xdata']['tt'] = array(
+ '#prefix' => '<table>',
+ '#suffix' => '</table>'
+ );
+
+ $form['xdata']['tt']['xalias'] = array(
+ '#title' => t('Alias'),
+ '#type' => 'textfield',
+ '#maxlength' => '10',
+ '#attributes' => array('autocomplete' => 'off'),
+ '#description' => t('Information identifier.'),
+ '#required' => TRUE,
+ '#size' => 20,
+ '#prefix' => '<tr><td>',
+ '#suffix' => '</td>',
+ );
+ $form['xdata']['tt']['xcity'] = array(
+ '#title' => t('City'),
+ '#type' => 'textfield',
+ '#maxlength' => '20',
+ '#attributes' => array('autocomplete' => 'off'),
+ '#required' => TRUE,
+ '#size' => 10,
+ '#prefix' => '<td>',
+ '#suffix' => '</td></tr>'
+ );
+
+ $form['xdata']['tt']['xcallername'] = array(
+ '#title' => t('Caller Name'),
+ '#type' => 'textfield',
+ '#attributes' => array('autocomplete' => 'off'),
+ '#description' => t('Contact Name'),
+ '#required' => TRUE,
+ '#size' => 20,
+ '#prefix' => '<tr><td>',
+ '#suffix' => '</td>',
+ );
+ $form['xdata']['tt']['xstate'] = array(
+ '#title' => t('State'),
+ '#type' => 'textfield',
+ '#maxlength' => '2',
+ '#attributes' => array('autocomplete' => 'off'),
+# '#description' => t('Exa. DC'),
+ '#required' => TRUE,
+ '#size' => 10,
+ '#prefix' => '<td>',
+ '#suffix' => '</td></tr>'
+ );
+
+ $form['xdata']['tt']['xaddress1'] = array(
+ '#title' => t('Address 1'),
+ '#type' => 'textfield',
+ '#attributes' => array('autocomplete' => 'off'),
+ '#required' => TRUE,
+ '#size' => 20,
+ '#prefix' => '<tr><td>',
+ '#suffix' => '</td>'
+ );
+ $form['xdata']['tt']['xzipcode'] = array(
+ '#title' => t('Zip Code'),
+ '#type' => 'textfield',
+ '#maxlength' => '5',
+ '#attributes' => array('autocomplete' => 'off'),
+ '#description' => t('12345'),
+ '#required' => TRUE,
+ '#size' => 10,
+ '#prefix' => '<td>',
+ '#suffix' => '</td></tr>'
+ );
+
+ $form['xdata']['tt']['xaddress2'] = array(
+ '#title' => t('Address 2'),
+ '#type' => 'textfield',
+ '#size' => 20,
+ '#attributes' => array('autocomplete' => 'off'),
+ '#description' => t('(Optional)'),
+ '#prefix' => '<tr><td >',
+ '#suffix' => '</td>'
+ );
+ $form['xdata']['tt']['xplusfour'] = array(
+ '#title' => t('Plus Four'),
+ '#type' => 'textfield',
+ '#maxlength' => '4',
+ '#attributes' => array('autocomplete' => 'off'),
+ '#description' => t('1234 (Optional)'),
+ '#size' => 10,
+ '#prefix' => '<td>',
+ '#suffix' => '</td></tr>'
+ );
+
+
+ $form['xdata']['submit'] = array(
+ '#type' => 'submit',
+ '#value' => t('Submit'),
+ );
+
+
+ return $form;
+}
+/**
+ * Validate the form.
+ */
+ 
+ function addinfo_nameform_validate(&$form, &$form_state){
+	# 
+ }
+/**
+ * Handle post_validate form submission.
+ */
+ 
+ function addinfo_nameform_submit(&$form, &$form_state){
+	$suss = 'fail';
+	$Objx = new xdb911();
+	$al = $form_state['values']['xalias'];
+	$ct = $form_state['values']['xcity'];
+	$cn = $form_state['values']['xcallername'];
+	$st = $form_state['values']['xstate'];
+	$ad1= $form_state['values']['xaddress1'];
+	$zc = $form_state['values']['xzipcode'];
+	$ad2= $form_state['values']['xaddress2'];
+	$pf = $form_state['values']['xplusfour'];
+	$suss = $Objx->addcontact($al,$cn,$ad1,$ad2,$ct,$st,$zc,$pf,$GLOBALS['user']->name);
+	if($suss == 'true') {
+		drupal_set_message(t('Contact information saved successfully: %alias',array('%alias'=>$al)));
+		}
+	else {
+		$xerror=$Objx->get_errorl();
+		drupal_set_message(t('The information was not entered: %suss',array('%suss'=>$xerror)),'error');
+		}
+ }
+?>

@@ -1,0 +1,127 @@
+<?php
+ 
+/**
+ * @file
+ * Play with teh Form API
+ */
+ 
+/**
+ * Implements hook_menu().
+ */
+ 
+ function adddid_menu(){
+ $items['adddid'] = array(
+ 'title' => t('Register Header Number E911'),
+ 'page callback' => 'drupal_get_form',
+ 'page arguments' => array('adddid_nameform'),
+// 'access callback' => TRUE,
+ 'access arguments' => array('administer adddid settings'),
+ 'type' => MENU_NORMAL_ITEM
+ 
+ );
+ return $items;
+ }
+/*
+	permission	
+*/
+function adddid_permission(){
+ return array(
+ 'administer adddid settings' => array(
+  'title' => t('Administrar configuración adddid'),
+  'restrict access' => true,
+  )
+ );
+}
+
+
+/**
+file data base info
+**/
+require_once("xdb.php");
+
+/*
+*/
+/**
+ * Define a form.
+ */
+function adddid_nameform(){
+$Objx = new xdb911();
+# Lo primero es que debe tener contactos
+$numcont = $Objx->havecontacts($GLOBALS['user']->name);
+
+if($numcont > 0){
+	$options=array();
+#	$optionsx = "'---'=> t('Select...')" ;
+	while ($xline = $Objx->get_datarq()){
+		$options[$xline["idcontacto"]] = t($xline["alias"]);
+#		$optionsx.= ",'".$xline["idcontacto"]."' => t('".$xline["alias"]."')";
+		}
+  $form['xdata'] = array(
+ '#title' => t('Header Number'),
+ '#type' => 'fieldset',
+ '#description' => t('Enter the requested information: ').$numcont, 
+ );
+
+ $form['xdata']['xdid'] = array(
+ '#title' => t('DID'),
+ '#type' => 'textfield',
+ '#maxlength' => '10',
+ '#description' => t('Header Number'),
+ '#attributes' => array('autocomplete' => 'off'),
+ '#element_validate' => array('element_validate_number'),
+ '#size' => 15,
+ '#required' => TRUE
+ );
+
+ $form['xdata']['xalias'] = array(
+ '#title' => t('Contact Information'),
+ '#type' => 'select',
+ '#description' => t('Please, select contact information for DID'),
+ '#options' => $options,
+ '#required' => TRUE
+ );
+
+
+ $form['xdata']['submit'] = array(
+ '#type' => 'submit',
+ '#value' => t('Submit'),
+ );
+ }
+else {
+ $form['xdata'] = array(
+ '#title' => t('Header Number'),
+ '#type' => 'fieldset',
+ '#description' => t("You don't have any contact register"),
+ );
+
+ }
+
+ return $form;
+}
+/**
+ * Validate the form.
+ */
+ 
+ function adddid_nameform_validate(&$form, &$form_state){
+
+ }
+/**
+ * Handle post_validate form submission.
+ */
+ 
+ function adddid_nameform_submit(&$form, &$form_state){
+	$Objx = new xdb911();
+	$xalias_key=$form_state['values']['xalias'];
+	$xalias = $form['xdata']['xalias']['#options'][$xalias_key];
+	$xdid = $form_state['values']['xdid'];
+#	$suss=$Objx->add911didvi($GLOBALS['user']->name,$xalias_key,$xdid);
+	$suss=$Objx->addheaddid($xalias_key,$xdid);
+	if($suss == 'true'){
+		drupal_set_message(t('Header Number %number, saved successfully with contact: %alias',array('%number'=>$xdid,'%alias'=>$xalias)));
+		}
+	else{
+		$xerror=$Objx->get_errorl();
+		drupal_set_message(t('The information was not entered: %suss',array('%suss'=>$suss)),'error');
+		}
+ }
+?>
