@@ -1,6 +1,6 @@
 name = Registro de Contacto
 description = Formulario para Registro de contacto sistema 911
-package = Integration API VoIP Innovations - Sistema 911
+package = Integration API - Sistema 911
 core = 7.x
 version = 0.01
 files[] = addinfo
